@@ -9,34 +9,6 @@ name: Container for Kanidm
   push:
 
 jobs:
-  test:
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        target:
-          - linux/arm64
-          - linux/amd64
-    steps:
-      - uses: actions/checkout@v3
-
-      - name: Update package manager
-        run: sudo apt-get update
-      - name: Install dependencies
-        run: |
-          sudo apt-get install -y \
-            libpam0g-dev \
-            libudev-dev \
-            libssl-dev \
-            libsqlite3-dev
-      - name: Install latest stable
-        uses: actions-rs/toolchain@v1
-        with:
-            toolchain: stable
-            default: true
-            components: cargo
-      - name: Run cargo test
-        run: cargo test -j1
-
   kanidm_build:
     needs: test
     runs-on: ubuntu-latest
