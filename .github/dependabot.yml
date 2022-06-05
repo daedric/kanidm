@@ -1,6 +1,12 @@
 ---
 version: 2
 updates:
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: weekly
+      time: "06:00"
+      timezone: Australia/Brisbane
   - package-ecosystem: pip
     directory: "/kanidm_rlm_python"
     schedule:
