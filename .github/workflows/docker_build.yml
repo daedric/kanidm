@@ -10,7 +10,6 @@ name: Container for Kanidm
 
 jobs:
   kanidm_build:
-    needs: test
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
