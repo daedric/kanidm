@@ -45,8 +45,8 @@ else \
   export CC="/usr/bin/clang"; \
 fi
 RUN cargo build ${KANIDM_BUILD_OPTIONS} \
-  --features=${KANIDM_FEATURES} \
-  --target-dir=/usr/src/kanidm/target/ \
+  --features="${KANIDM_FEATURES}"" \
+  --target-dir="/usr/src/kanidm/target/" \
   --release
 RUN if [ "${SCCACHE_REDIS}" != "" ]; then sccache -s; fi
 
