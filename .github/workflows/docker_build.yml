@@ -40,8 +40,8 @@ jobs:
   kanidm_build:
     needs: test
     runs-on: ubuntu-latest
-    fail-fast: false
     strategy:
+      fail-fast: false
       matrix:
         target:
           - linux/arm64
