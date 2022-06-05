@@ -45,7 +45,6 @@ jobs:
             "KANIDM_BUILD_OPTIONS=-j1"
           file: kanidmd/Dockerfile
   radius_build:
-    needs: test
     runs-on: ubuntu-latest
     strategy:
       matrix:
