@@ -10,46 +10,45 @@ FROM repos AS builder
 LABEL maintainer william@blackhats.net.au
 
 RUN zypper install -y \
-        cargo \
-        rust \
-        gcc clang lld \
-        make automake autoconf \
-        libopenssl-devel pam-devel \
-        sqlite3-devel \
-        sccache && \
-    zypper clean -a
+    cargo \
+    rust \
+    gcc clang lld \
+    make automake autoconf \
+    libopenssl-devel pam-devel \
+    sqlite3-devel \
+    sccache
+RUN zypper clean -a
 
 COPY . /usr/src/kanidm
 WORKDIR /usr/src/kanidm/kanidmd/daemon
 
 ARG SCCACHE_REDIS=""
-ARG KANIDM_FEATURES
-ARG KANIDM_BUILD_PROFILE
+ARG KANIDM_FEATURES=""
+RUN echo "KANIDM_FEATURES ${KANIDM_FEATURES}"
+ARG KANIDM_BUILD_PROFILE=""
+RUN echo "KANIDM_BUILD_PROFILE ${KANIDM_BUILD_PROFILE}"
 ARG KANIDM_BUILD_OPTIONS=""
+RUN echo "KANIDM_BUILD_OPTIONS ${KANIDM_BUILD_OPTIONS}"
 
 RUN mkdir /scratch
-RUN echo $KANIDM_BUILD_PROFILE
-RUN echo $KANIDM_FEATURES
 
 ENV RUSTFLAGS="-Clinker=clang -Clink-arg=-fuse-ld=/usr/bin/ld.lld"
 ENV CARGO_HOME=/scratch/.cargo
 
 RUN if [ "${SCCACHE_REDIS}" != "" ]; \
-		then \
-			export CC="/usr/bin/sccache /usr/bin/clang" && \
-      export CARGO_INCREMENTAL=false && \
-			export RUSTC_WRAPPER=sccache && \
-			sccache --start-server; \
-		else \
-			export CC="/usr/bin/clang"; \
-	fi && \
-    cargo build ${KANIDM_BUILD_OPTIONS} \
-		--features=${KANIDM_FEATURES} \
-		--target-dir=/usr/src/kanidm/target/ \
-		--release && \
-    if [ "${SCCACHE_REDIS}" != "" ]; \
-		then sccache -s; \
-	fi;
+then \
+  export CC="/usr/bin/sccache /usr/bin/clang" && \
+  export CARGO_INCREMENTAL=false && \
+  export RUSTC_WRAPPER=sccache && \
+  sccache --start-server; \
+else \
+  export CC="/usr/bin/clang"; \
+fi
+RUN cargo build ${KANIDM_BUILD_OPTIONS} \
+  --features=${KANIDM_FEATURES} \
+  --target-dir=/usr/src/kanidm/target/ \
+  --release
+RUN if [ "${SCCACHE_REDIS}" != "" ]; then sccache -s; fi
 
 RUN ls -al /usr/src/kanidm/target/release
 
