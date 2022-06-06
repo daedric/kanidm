@@ -44,15 +44,18 @@ then \
 else \
   export CC="/usr/bin/clang"; \
 fi
-RUN if [ -z "${KANIDM_FEATURES}" ]; then\
-  export KANIDM_FEATURES="--features=${KANIDM_FEATURES}"; \
+
+RUN if [ -z "${KANIDM_FEATURES}" ]; then \
+  cargo build ${KANIDM_BUILD_OPTIONS} \
+    --target-dir="/usr/src/kanidm/target/" \
+    --release; \
 else \
-  unset KANIDM_FEATURES \
-fi
-RUN cargo build ${KANIDM_BUILD_OPTIONS} \
-  ${KANIDM_FEATURES} \
+  cargo build ${KANIDM_BUILD_OPTIONS} \
   --target-dir="/usr/src/kanidm/target/" \
-  --release
+  --features="${KANIDM_FEATURES}" \
+  --release; \
+fi
+RUN
 RUN if [ "${SCCACHE_REDIS}" != "" ]; then sccache -s; fi
 
 RUN ls -al /usr/src/kanidm/target/release
