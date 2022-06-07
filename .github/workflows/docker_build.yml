@@ -11,22 +11,15 @@ name: Container for Kanidm
 jobs:
   kanidm_build:
     runs-on: ubuntu-latest
-    # strategy:
-      # fail-fast: false
-      #matrix:
-      #  target:
-      #    - linux/arm64
-      #    - linux/amd64
+    strategy:
+      fail-fast: false
+      matrix:
+       target:
+         - linux/arm64
+         - linux/amd64
     if: github.event_name == 'push'
     steps:
       - uses: actions/checkout@v3
-      - name: swapfileyolooooo
-        run: |
-          dd if=/dev/zero of="swap.img" bs=10240 count=102400
-          chmod 0600 "swap.img"
-          sudo mkswap "swap.img"
-          sudo chown root:root swap.img
-          sudo swapon "swap.img"
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v2
       - name: Set up Docker Buildx
@@ -48,14 +41,12 @@ jobs:
         uses: docker/build-push-action@v3
         with:
           push: ${{ github.ref == 'refs/heads/master' }}
-          # platforms: ${{matrix.target}}
-          platforms: "linux/arm64,linux/amd64"
+          platforms: ${{matrix.target}}
           tags: ghcr.io/kanidm/kanidmd:devel
           build-args: |
             "KANIDM_BUILD_PROFILE=container_generic"
+            "KANIDM_BUILD_OPTIONS=j1"
           file: kanidmd/Dockerfile
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
   radius_build:
     runs-on: ubuntu-latest
     strategy:

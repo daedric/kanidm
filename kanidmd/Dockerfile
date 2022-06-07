@@ -23,24 +23,22 @@ WORKDIR /usr/src/kanidm/kanidmd/daemon
 
 ARG SCCACHE_REDIS=""
 ARG KANIDM_FEATURES=""
-RUN echo "KANIDM_FEATURES ${KANIDM_FEATURES}"
+RUN echo "KANIDM_FEATURES = '${KANIDM_FEATURES}'"
 ARG KANIDM_BUILD_PROFILE=""
-RUN echo "KANIDM_BUILD_PROFILE ${KANIDM_BUILD_PROFILE}"
+RUN echo "KANIDM_BUILD_PROFILE = '${KANIDM_BUILD_PROFILE}'"
 ARG KANIDM_BUILD_OPTIONS=""
-RUN echo "KANIDM_BUILD_OPTIONS ${KANIDM_BUILD_OPTIONS}"
+RUN echo "KANIDM_BUILD_OPTIONS = '${KANIDM_BUILD_OPTIONS}'"
 
 RUN mkdir /scratch
 
 ENV RUSTFLAGS="-Clinker=clang -Clink-arg=-fuse-ld=/usr/bin/ld.lld"
 ENV CARGO_HOME="/scratch/.cargo"
-ENV CARGO_BUILD_JOBS=1
-ENV CARGO_INCREMENTAL="false"
 ENV TERM="dumb"
 
 
-# export CARGO_INCREMENTAL=false && \
 RUN if [ "${SCCACHE_REDIS}" != "" ]; \
 then \
+  export CARGO_INCREMENTAL=false && \
   export CC="/usr/bin/sccache /usr/bin/clang" && \
   export RUSTC_WRAPPER=sccache && \
   sccache --start-server; \
@@ -48,18 +46,16 @@ else \
   export CC="/usr/bin/clang"; \
 fi
 
-# first we build the
-RUN
-#RUN if [ -z "${KANIDM_FEATURES}" ]; then \
-RUN cargo build -p daemon ${KANIDM_BUILD_OPTIONS} \
+RUN if [ -z "${KANIDM_FEATURES}" ]; then \
+  cargo build -p daemon ${KANIDM_BUILD_OPTIONS} \
     --target-dir="/usr/src/kanidm/target/" \
-    --release
-#else \
-#  cargo build ${KANIDM_BUILD_OPTIONS} \
-#  --target-dir="/usr/src/kanidm/target/" \
-#  --features="${KANIDM_FEATURES}" \
-#  --release; \
-#fi
+    --release \
+else \
+ cargo build -p daemon ${KANIDM_BUILD_OPTIONS} \
+ --target-dir="/usr/src/kanidm/target/" \
+ --features="${KANIDM_FEATURES}" \
+ --release; \
+fi
 RUN if [ "${SCCACHE_REDIS}" != "" ]; then sccache -s; fi
 
 RUN ls -al /usr/src/kanidm/target/release
