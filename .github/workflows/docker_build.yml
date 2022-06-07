@@ -23,6 +23,7 @@ jobs:
       - name: swapfileyolooooo
         run: |
           dd if=/dev/zero of="swap.img" bs=1024 count=1024
+          sudo chown root:root swap.img
           chmod 0600 "swap.img"
           mkswap "swap.img"
           swapon "swap.img"
