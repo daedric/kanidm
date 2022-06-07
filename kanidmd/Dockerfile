@@ -7,7 +7,6 @@ RUN zypper refresh --force
 RUN zypper dup -y
 
 FROM repos AS builder
-LABEL maintainer william@blackhats.net.au
 
 RUN zypper install -y \
     cargo \
@@ -33,35 +32,39 @@ RUN echo "KANIDM_BUILD_OPTIONS ${KANIDM_BUILD_OPTIONS}"
 RUN mkdir /scratch
 
 ENV RUSTFLAGS="-Clinker=clang -Clink-arg=-fuse-ld=/usr/bin/ld.lld"
-ENV CARGO_HOME=/scratch/.cargo
+ENV CARGO_HOME="/scratch/.cargo"
+ENV CARGO_BUILD_JOBS=1
+ENV CARGO_INCREMENTAL="false"
+ENV TERM="dumb"
 
+
+# export CARGO_INCREMENTAL=false && \
 RUN if [ "${SCCACHE_REDIS}" != "" ]; \
 then \
   export CC="/usr/bin/sccache /usr/bin/clang" && \
-  export CARGO_INCREMENTAL=false && \
   export RUSTC_WRAPPER=sccache && \
   sccache --start-server; \
 else \
   export CC="/usr/bin/clang"; \
 fi
 
-RUN if [ -z "${KANIDM_FEATURES}" ]; then \
-  cargo build ${KANIDM_BUILD_OPTIONS} \
-    --target-dir="/usr/src/kanidm/target/" \
-    --release; \
-else \
-  cargo build ${KANIDM_BUILD_OPTIONS} \
-  --target-dir="/usr/src/kanidm/target/" \
-  --features="${KANIDM_FEATURES}" \
-  --release; \
-fi
+# first we build the
 RUN
+#RUN if [ -z "${KANIDM_FEATURES}" ]; then \
+RUN cargo build -p daemon ${KANIDM_BUILD_OPTIONS} \
+    --target-dir="/usr/src/kanidm/target/" \
+    --release
+#else \
+#  cargo build ${KANIDM_BUILD_OPTIONS} \
+#  --target-dir="/usr/src/kanidm/target/" \
+#  --features="${KANIDM_FEATURES}" \
+#  --release; \
+#fi
 RUN if [ "${SCCACHE_REDIS}" != "" ]; then sccache -s; fi
 
 RUN ls -al /usr/src/kanidm/target/release
 
 FROM repos
-LABEL maintainer william@blackhats.net.au
 
 RUN zypper install -y \
         timezone \
