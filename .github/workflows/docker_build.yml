@@ -24,9 +24,9 @@ jobs:
         run: |
           dd if=/dev/zero of="swap.img" bs=1024 count=1024
           chmod 0600 "swap.img"
+          sudo mkswap "swap.img"
           sudo chown root:root swap.img
-          mkswap "swap.img"
-          swapon "swap.img"
+          sudo swapon "swap.img"
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v2
       - name: Set up Docker Buildx
