@@ -22,10 +22,10 @@ jobs:
       - uses: actions/checkout@v3
       - name: swapfileyolooooo
         run: |
-          dd if=/dev/zero of="${TMPDIR}/swap.img" bs=1024 count=1024
-          chmod 0600 "${TMPDIR}/swap.img"
-          mkswap "${TMPDIR}/swap.img"
-          swapon "${TMPDIR}/swap.img"
+          dd if=/dev/zero of="swap.img" bs=1024 count=1024
+          chmod 0600 "swap.img"
+          mkswap "swap.img"
+          swapon "swap.img"
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v2
       - name: Set up Docker Buildx
